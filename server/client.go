@@ -6,7 +6,8 @@ import (
 )
 
 type Client struct {
-	conn net.Conn
+	conn     net.Conn
+	httpServ *HttpServer
 }
 
 func (client *Client) handleRequest() {
@@ -21,17 +22,8 @@ func (client *Client) handleRequest() {
 		msg := buffer[:data]
 		fmt.Println(string(msg))
 
-		res := createHttpResponse(client.conn)
-
-		//test
-		type Msg struct {
-			Message string `json:"Message"`
-		}
-
-		res.writeStatus(200, "OK")
-		res.sendJSON(Msg{
-			Message: "HELLO1",
-		})
+		response := createHttpResponse(client.conn)
+		client.httpServ.methods["GET"][0].function(*response)
 
 		client.conn.Close()
 	}

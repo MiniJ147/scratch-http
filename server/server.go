@@ -22,7 +22,7 @@ func CreateServer(host string, port string) *Server {
 	}
 }
 
-func (serv *Server) Run() {
+func (serv *Server) Run(httpServ *HttpServer) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", serv.host, serv.port))
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +37,8 @@ func (serv *Server) Run() {
 		}
 
 		client := &Client{
-			conn: conn,
+			conn:     conn,
+			httpServ: httpServ,
 		}
 
 		go client.handleRequest()

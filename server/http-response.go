@@ -68,7 +68,7 @@ func (r *HttpResponse) SendJSON(payload interface{}) {
 	r.conn.Write(payLoadData)
 }
 
-func (r *HttpResponse) send(payload string) {
+func (r *HttpResponse) Send(payload string) {
 	payLoadData := r.compilePayload(payload)
 
 	r.WriteHeader("Content-Length", strconv.Itoa(len(payLoadData)))

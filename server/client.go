@@ -10,6 +10,36 @@ type Client struct {
 	httpServ *HttpServer
 }
 
+func parseMethodAndRoute(headerString string) (string, string) {
+	requestMethod := ""
+	requestRoute := ""
+	count := 0
+	i := 0
+
+	for {
+		currChar := string(headerString[i])
+
+		if count >= 2 {
+			break
+		}
+		if currChar == " " {
+			count += 1
+			i += 1
+			continue
+		}
+
+		if count < 1 {
+			requestMethod += currChar
+		} else {
+			requestRoute += currChar
+		}
+
+		i += 1
+	}
+
+	return requestMethod, requestRoute
+}
+
 func (client *Client) handleRequest() {
 	buffer := make([]byte, 2048*2)
 	for {
@@ -19,11 +49,14 @@ func (client *Client) handleRequest() {
 			continue
 		}
 
-		msg := buffer[:data]
-		fmt.Println(string(msg))
+		requestHeaderString := string(buffer[:data])
+
+		method, route := parseMethodAndRoute(requestHeaderString)
+
+		fmt.Println("Found: ", method, route)
 
 		response := createHttpResponse(client.conn)
-		client.httpServ.methods["GET"][0].function(*response)
+		client.httpServ.Find(method, route).function(*response)
 
 		client.conn.Close()
 	}

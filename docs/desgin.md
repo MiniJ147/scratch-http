@@ -34,3 +34,7 @@ below is example theory code
             route.func(HTTP_REQUEST, HTTP_RESPONSE)
         }
     }
+
+## TODO
+
+### add error handling

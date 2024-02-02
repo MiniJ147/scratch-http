@@ -1,5 +1,16 @@
 package main
 
+/*
+TODO:
+ - add request support
+ - add parsing queries and body support
+ - add error handling
+ - add post and delete
+ - add html file support
+ - add css support
+ - add js support
+*/
+
 import (
 	"fmt"
 
@@ -28,6 +39,11 @@ func main() {
 		res.SendJSON(msg{
 			Message: "HELLO FROM BOOK!",
 		})
+	})
+
+	serv.Get("/html", func(res server.HttpResponse) {
+		res.WriteStatus(200, "OK")
+		res.Send("<h1>JOHN</h1>")
 	})
 
 	serv.Listen("localhost", "3000")

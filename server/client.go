@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"net"
-	"time"
 )
 
 type Client struct {
@@ -22,17 +21,17 @@ func (client *Client) handleRequest() {
 		msg := buffer[:data]
 		fmt.Println(string(msg))
 
-		dt := time.Now()
 		res := createHttpResponse(client.conn)
 
-		res.writeStatus(200, "OK")
-		res.writeHeader("Date", dt.Format("01-02-2006 15:04:05"))
-		res.writeHeader("Connection", "Keep-Alive")
-		res.writeHeader("Keep-Alive", "timeout=5")
-		res.writeHeader("Content-Length", "24")
-		res.writeHeader("Content-Type", "text/html")
+		//test
+		type Msg struct {
+			Message string `json:"Message"`
+		}
 
-		res.send("<html><h1>SUP</h1></html>")
+		res.writeStatus(200, "OK")
+		res.sendJSON(Msg{
+			Message: "HELLO1",
+		})
 
 		client.conn.Close()
 	}

@@ -23,16 +23,25 @@ func (serv *HttpServer) Find(method string, route string) Route {
 	return routes[0]
 }
 
-func (serv *HttpServer) Get(url_path string, function func(res HttpResponse)) {
+// method: GET, POST, PATCH, DELETE ...
+func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(res HttpResponse)) {
 	newRoute := Route{
-		route:    url_path,
+		route:    urlPath,
 		function: function,
 	}
 
-	currentRoutes := serv.methods["GET"]
+	currentRoutes := serv.methods[method]
 	currentRoutes = append(currentRoutes, newRoute)
 
-	serv.methods["GET"] = currentRoutes
+	serv.methods[method] = currentRoutes
+}
+
+func (serv *HttpServer) Get(urlPath string, function func(res HttpResponse)) {
+	helperCreateMethod(serv, "GET", urlPath, function)
+}
+
+func (serv *HttpServer) Post(urlPath string, function func(res HttpResponse)) {
+	helperCreateMethod(serv, "POST", urlPath, function)
 }
 
 func (serv *HttpServer) Listen(host string, port string) {

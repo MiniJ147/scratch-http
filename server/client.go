@@ -10,6 +10,7 @@ type Client struct {
 	httpServ *HttpServer
 }
 
+// might refactor later
 func parseMethodAndRoute(headerString string) (string, string) {
 	requestMethod := ""
 	requestRoute := ""
@@ -41,7 +42,7 @@ func parseMethodAndRoute(headerString string) (string, string) {
 }
 
 func (client *Client) handleRequest() {
-	buffer := make([]byte, 2048*2)
+	buffer := make([]byte, 2048*2) //where request is stored
 	for {
 		data, err := client.conn.Read(buffer)
 		if err != nil {

@@ -1,5 +1,9 @@
 package server
 
+/*
+	Handles the tcp connections behind the scenes. No fancy http handling here
+*/
+
 import (
 	"fmt"
 	"log"

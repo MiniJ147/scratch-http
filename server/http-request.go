@@ -59,22 +59,23 @@ func parseRequestLine(req *HttpRequest, reqStr string) {
 }
 
 func parseHeader(req *HttpRequest, reqStr string) {
-	lines := strings.SplitAfter(reqStr, HEADER_END_LINE)
+	lines := strings.Split(reqStr, HEADER_END_LINE)
 	length := len(lines)
 	parseRequestLine(req, lines[0])
 
 	idx := 1
-	for lines[idx] != HEADER_END_LINE && idx < length {
-		//fmt.Print(lines[idx])
+	for lines[idx] != HEADER_END_LINE && idx < length-1 {
+		fmt.Println(lines[idx])
 		c := strings.Split(lines[idx], ":")
-		name, value := strings.ToLower(c[0]), c[1][1:] //c[1][1:] parses out value while removing the space
-
-		req.metadata[name] = value
+		if len(c) > 1 {
+			name, value := strings.ToLower(c[0]), c[1][1:]
+			req.metadata[name] = value
+		}
 		idx += 1
 	}
 
-	idx += 1
 	if idx >= length {
+		fmt.Println("out of bounds")
 		return
 	}
 
@@ -87,6 +88,7 @@ func parseHeader(req *HttpRequest, reqStr string) {
 	}
 
 	req.body = body
+	fmt.Println(body)
 }
 
 func CreateHttpRequest(requestString string) *HttpRequest {

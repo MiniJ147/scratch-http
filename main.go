@@ -3,7 +3,6 @@ package main
 /*
 TODO:
  - add support for super long request (split tcp reading)
- - add request support
  - add parsing queries and body support
  - add error handling
  - add post and delete

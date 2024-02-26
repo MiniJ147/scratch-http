@@ -2,6 +2,7 @@ package main
 
 /*
 TODO:
+ - add support for super long request (split tcp reading)
  - add request support
  - add parsing queries and body support
  - add error handling
@@ -34,7 +35,7 @@ func main() {
 	})
 
 	serv.Get("/book", func(res server.HttpResponse) {
-
+		fmt.Println("book route")
 		res.WriteStatus(200, "OK")
 		res.SendJSON(msg{
 			Message: "HELLO FROM BOOK!",

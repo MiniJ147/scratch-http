@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -10,7 +11,7 @@ type Client struct {
 }
 
 func (client *Client) handleRequest() {
-	buffer := make([]byte, 2048*2) //where request is stored
+	buffer := make([]byte, 2048*4) //where request is stored
 	for {
 		data, err := client.conn.Read(buffer)
 		if err != nil {
@@ -24,6 +25,7 @@ func (client *Client) handleRequest() {
 
 		request := CreateHttpRequest(requestHeaderString)
 
+		fmt.Println("client: ", request.route)
 		response := createHttpResponse(client.conn)
 		client.httpServ.Find(request.method, request.route).function(*response)
 

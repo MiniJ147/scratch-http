@@ -1,5 +1,7 @@
 package server
 
+import "fmt"
+
 type Route struct {
 	route    string
 	function func(res HttpResponse)
@@ -14,12 +16,17 @@ func (serv *HttpServer) Find(method string, route string) Route {
 	routes := serv.methods[method]
 
 	for i := range routes {
+		fmt.Println(i)
+		fmt.Println(routes[i].route, route)
 		if routes[i].route == route {
+			fmt.Println("Found")
 			return routes[i]
 		}
 	}
 
 	//TODO ADD ERROR HANDLING
+	fmt.Println("error")
+	fmt.Println(serv.methods, method, route)
 	return routes[0]
 }
 

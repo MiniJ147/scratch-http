@@ -1,8 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
-	"strconv"
+	"log"
+	"strings"
 )
 
 /*
@@ -18,179 +20,86 @@ Connection: close
 	{
 	  "msg
 */
-type Query struct {
-	name  string
-	value string
-	len   int
-}
 
 type HttpRequest struct {
 	method      string
 	route       string
 	httpVersion string
-	metadata    string
-	body        string
-	contentSize int
-	query       []Query
+	body        interface{}
+	metadata    map[string]string
+	query       map[string]string
 }
 
-// might refactor later
-func parseMethodAndRoute(headerString string) (string, string) {
-	requestMethod := ""
-	requestRoute := ""
-	count := 0
-	i := 0
+func parseRequestLine(req *HttpRequest, reqStr string) {
+	parsed := strings.Split(reqStr, " ")
+	fmt.Println(parsed)
+	method, routeStr, version := parsed[0], parsed[1], parsed[2]
 
-	for {
-		currChar := string(headerString[i])
+	parsedRoute := strings.Split(routeStr, "?")
 
-		if count >= 2 {
-			break
+	var route, queryLine string
+
+	if len(parsedRoute) > 1 {
+		route, queryLine = parsedRoute[0], parsedRoute[1]
+		queries := strings.Split(queryLine, "&")
+
+		for _, q := range queries {
+			queryParse := strings.Split(q, "=")
+			name, value := queryParse[0], queryParse[1]
+
+			req.query[name] = value
 		}
-		if currChar == " " {
-			count += 1
-			i += 1
-			continue
-		}
-
-		if count < 1 {
-			requestMethod += currChar
-		} else {
-			requestRoute += currChar
-		}
-
-		i += 1
+	} else {
+		route, queryLine = parsedRoute[0], ""
 	}
 
-	return requestMethod, requestRoute
+	req.route = route
+	req.method = method
+	req.httpVersion = version
 }
 
-func parseQuery(req *HttpRequest, queryString string) {
-	stage := 0 //0 adding to name | 1: add to value | 2: reset
+func parseHeader(req *HttpRequest, reqStr string) {
+	lines := strings.SplitAfter(reqStr, HEADER_END_LINE)
+	length := len(lines)
+	parseRequestLine(req, lines[0])
 
-	currName, currValue := "", ""
-	for i := 0; i < len(queryString); i++ {
-		currChar := string(queryString[i])
-		switch stage {
-		case 0:
-			if currChar == "=" {
-				stage++
-				continue
-			}
+	idx := 1
+	for lines[idx] != HEADER_END_LINE && idx < length {
+		//fmt.Print(lines[idx])
+		c := strings.Split(lines[idx], ":")
+		name, value := strings.ToLower(c[0]), c[1][1:] //c[1][1:] parses out value while removing the space
 
-			currName += currChar
-		case 1:
-			if currChar == "&" {
-				req.query = append(req.query, Query{
-					name:  currName,
-					value: currValue,
-				})
-
-				currName = ""
-				currValue = ""
-				stage = 0
-
-				continue
-			}
-			currValue += currChar
-		}
+		req.metadata[name] = value
+		idx += 1
 	}
 
-	//checking if we have to do it one more time
-	if currName != "" && currValue != "" {
-		req.query = append(req.query, Query{
-			name:  currName,
-			value: currValue,
-		})
+	idx += 1
+	if idx >= length {
+		return
 	}
-}
 
-func parseRequest(req *HttpRequest, requestString string) {
-	stage := 0 //0: Method 1: route | 2:query-name | 3: http-version | 4: content-length | 5: metadata | 6: body
-
-	query := Query{
-		name:  "",
-		value: "",
-		len:   0,
+	//parse body if there is one
+	var body interface{}
+	err := json.Unmarshal([]byte(lines[idx]), &body)
+	if err != nil {
+		log.Println(err)
+		return
 	}
-	queryStartIndex := -1
-	contentLenStr := ""
 
-	for i := 0; i < len(requestString); i++ {
-		currentChar := string(requestString[i])
-		switch stage {
-		case 0:
-			if currentChar == " " {
-				stage++
-				continue
-			}
-
-			req.method += currentChar
-		case 1:
-			if currentChar == " " {
-				stage += 2
-				continue
-			} else if currentChar == "?" {
-				queryStartIndex = i + 1
-				stage += 1
-				continue
-			}
-
-			req.route += currentChar
-		case 2:
-			if currentChar == " " {
-				parseQuery(req, requestString[queryStartIndex:queryStartIndex+query.len])
-				stage += 1
-				continue
-			}
-
-			query.len += 1
-		case 3:
-			if currentChar == "\n" {
-				if requestString[i+1:i+16] != "content-length: " {
-					//fmt.Println(requestString[i+1 : i+16])
-					stage += 1
-				} else {
-					stage += 2
-				}
-				continue
-			}
-			req.httpVersion += currentChar
-		case 4:
-			if currentChar == "\n" {
-				size := len(contentLenStr)
-				value, err := strconv.Atoi(contentLenStr[16 : size-1])
-				if err != nil {
-					fmt.Println(err)
-					stage += 1
-					continue
-				}
-
-				req.contentSize = value
-				stage += 1
-				continue
-			}
-
-			contentLenStr += currentChar
-		case 5:
-			//TDODO PARSE OUT BODY
-			req.body = ""
-			req.metadata = requestString[i:]
-			stage += 1
-		}
-		//fmt.Println(string(requestString[i]))
-	}
+	req.body = body
 }
 
 func CreateHttpRequest(requestString string) *HttpRequest {
-	_, route := parseMethodAndRoute(requestString)
+	//_, route := parseMethodAndRoute(requestString)
 	req := HttpRequest{
-		method: "",
-		route:  route,
+		method:   "",
+		route:    "",
+		body:     nil,
+		metadata: make(map[string]string),
+		query:    make(map[string]string),
 	}
 
-	parseRequest(&req, requestString)
-	fmt.Println(req)
+	parseHeader(&req, requestString)
 
 	return &req
 }

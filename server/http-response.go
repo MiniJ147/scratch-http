@@ -50,6 +50,7 @@ func (r *HttpResponse) initHeader() {
 	r.WriteHeader("Date", time.Now().Format("01-02-2006 15:04:05"))
 	r.WriteHeader("Connection", "Keep-Alive")
 	r.WriteHeader("Keep-Alive", "timeout=5")
+	r.WriteStatus(200, "OK")
 }
 
 func (r *HttpResponse) SendJSON(payload interface{}) {
@@ -64,7 +65,7 @@ func (r *HttpResponse) SendJSON(payload interface{}) {
 
 	headerData := r.compileHeader()
 
-	fmt.Println(string(headerData))
+	//fmt.Println(string(headerData))
 
 	r.conn.Write(headerData)
 	r.conn.Write(payLoadData)
@@ -77,15 +78,21 @@ func (r *HttpResponse) Send(payload string) {
 
 	headerData := r.compileHeader()
 
-	fmt.Println(string(headerData))
-	fmt.Println(string(payLoadData))
+	//fmt.Println(string(headerData))
+	//fmt.Println(string(payLoadData))
 
 	r.conn.Write(headerData)
 	r.conn.Write(payLoadData)
 }
 
 func (r *HttpResponse) SendFile(filename string) {
-	r.Send(file.ReadFile(filename))
+	data, err := file.ParseFile(filename)
+	if err != nil {
+		r.WriteStatus(404, "File Not Found")
+		r.Send("")
+		return
+	}
+	r.Send(data)
 }
 
 func createHttpResponse(conn net.Conn) *HttpResponse {

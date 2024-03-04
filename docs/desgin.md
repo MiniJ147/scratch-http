@@ -35,6 +35,13 @@ below is example theory code
         }
     }
 
-## TODO
-
-### add error handling
+## rendering html and css
+### file dir must look like this
+    
+    Root Dir/
+        views/
+            html/
+                index.html
+            css/
+                index.css
+        /...    

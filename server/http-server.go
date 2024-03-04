@@ -1,10 +1,13 @@
 package server
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Route struct {
 	route    string
-	function func(res HttpResponse)
+	function func(req *HttpRequest, res HttpResponse)
 }
 
 type HttpServer struct {
@@ -12,26 +15,24 @@ type HttpServer struct {
 	methods   map[string][]Route
 }
 
-func (serv *HttpServer) Find(method string, route string) Route {
+func (serv *HttpServer) Find(method string, route string) (Route, error) {
 	routes := serv.methods[method]
 
 	for i := range routes {
-		fmt.Println(i)
-		fmt.Println(routes[i].route, route)
+		//fmt.Println(i)
+		//fmt.Println(routes[i].route, route)
 		if routes[i].route == route {
 			fmt.Println("Found")
-			return routes[i]
+			return routes[i], nil
 		}
 	}
 
-	//TODO ADD ERROR HANDLING
 	fmt.Println("error")
-	fmt.Println(serv.methods, method, route)
-	return routes[0]
+	return routes[0], fmt.Errorf("could not find route")
 }
 
 // method: GET, POST, PATCH, DELETE ...
-func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(res HttpResponse)) {
+func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	newRoute := Route{
 		route:    urlPath,
 		function: function,
@@ -43,11 +44,11 @@ func helperCreateMethod(serv *HttpServer, method string, urlPath string, functio
 	serv.methods[method] = currentRoutes
 }
 
-func (serv *HttpServer) Get(urlPath string, function func(res HttpResponse)) {
+func (serv *HttpServer) Get(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	helperCreateMethod(serv, "GET", urlPath, function)
 }
 
-func (serv *HttpServer) Post(urlPath string, function func(res HttpResponse)) {
+func (serv *HttpServer) Post(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	helperCreateMethod(serv, "POST", urlPath, function)
 }
 
@@ -57,7 +58,20 @@ func (serv *HttpServer) Listen(host string, port string) {
 }
 
 func CreateHttpServer() *HttpServer {
-	return &HttpServer{
+	serv := &HttpServer{
 		methods: make(map[string][]Route),
 	}
+
+	/*type msg struct {
+		Message string `json:"Message"`
+	}*/
+
+	//important routes that are standard
+	serv.Get("/css", func(req *HttpRequest, res HttpResponse) {
+		fmt.Println("csss: " + req.route)
+		fileName := strings.SplitAfter(req.route, "/")[2]
+		res.WriteHeader("Content-Type", "text/css")
+		res.SendFile("css/" + fileName)
+	})
+	return serv
 }

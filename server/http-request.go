@@ -32,7 +32,7 @@ type HttpRequest struct {
 
 func parseRequestLine(req *HttpRequest, reqStr string) {
 	parsed := strings.Split(reqStr, " ")
-	fmt.Println(parsed)
+	//fmt.Println(parsed)
 	method, routeStr, version := parsed[0], parsed[1], parsed[2]
 
 	parsedRoute := strings.Split(routeStr, "?")
@@ -65,7 +65,7 @@ func parseHeader(req *HttpRequest, reqStr string) {
 
 	idx := 1
 	for lines[idx] != HEADER_END_LINE && idx < length-1 {
-		fmt.Println(lines[idx])
+		//fmt.Println(lines[idx])
 		c := strings.Split(lines[idx], ":")
 		if len(c) > 1 {
 			name, value := strings.ToLower(c[0]), c[1][1:]
@@ -88,7 +88,7 @@ func parseHeader(req *HttpRequest, reqStr string) {
 	}
 
 	req.body = body
-	fmt.Println(body)
+	//fmt.Println(body)
 }
 
 func CreateHttpRequest(requestString string) *HttpRequest {

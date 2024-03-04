@@ -27,96 +27,99 @@
 
 
 ## installation
-
-    go get github.com/minij147/scratch-http/
-
+```bash
+go get github.com/minij147/scratch-http/
+```
 ## Demo
+```go
+package main
 
-    package main
+import "github.com/minij147/scratch-http/server"
 
-    import "github.com/minij147/scratch-http/server"
-
-    func main(){
-        type msg struct {
-		    Message string `json:"Message"`
-	    }
-
-        serv := server.CreateHttpServer()
-
-        serv.Get("/", func(req *server.HttpRequest, res server.HttpResponse) {
-            res.WriteStatus(200, "OK")
-            res.SendJSON(msg{
-                Message: "HELLO FROM BASE ROUTE!",
-            })
-        })
-
-        serv.Listen("localhost", "3000")
+func main(){
+    type msg struct {
+	    Message string `json:"Message"`
     }
 
+    serv := server.CreateHttpServer()
+
+    serv.Get("/", func(req *server.HttpRequest, res server.HttpResponse) {
+        res.WriteStatus(200, "OK")
+        res.SendJSON(msg{
+            Message: "HELLO FROM BASE ROUTE!",
+        })
+    })
+
+    serv.Listen("localhost", "3000")
+}
+```
 ## Creating Server / running
-    
-    initilizes the http server. This will be used to communicate with http.
+```go
+initilizes the http server. This will be used to communicate with http.
 
-    //returns *server.HttpServer{}
-    serv := server.CreateHttpServer() 
+//returns *server.HttpServer{}
+serv := server.CreateHttpServer() 
 
-    //turns on server to listen on ip and port
-    serv.Listen(host, port) 
+//turns on server to listen on ip and port
+serv.Listen(host, port) 
+```
 
 ## Method Functions
-
-    //this is how to create routes assigned to specfic methods. 
-    //Func will be called when route is called.
+```go
+//this is how to create routes assigned to specfic methods. 
+//Func will be called when route is called.
     
-    serv.Get("route", func)
+serv.Get("route", func)
 
-    serv.Post("route", func)
+serv.Post("route", func)
+```
 
+## Respons
+```go
+type HttpResponse struct {
+    statusLine string  
+    header     map[string]string
+    conn       net.Conn
+}   
 
-## Response
-    type HttpResponse struct {
-        statusLine string  
-        header     map[string]string
-        conn       net.Conn
-    }   
+//return parsed file
+httpResponse.SendFile(filename)
 
-    //return parsed file
-    httpResponse.SendFile(filename)
+//sends string to browser
+httpResponse.Send(string)
 
-    //sends string to browser
-    httpResponse.Send(string)
+//sends json to browser
+httpResponse.SendJSON(interface{})
 
-    //sends json to browser
-    httpResponse.SendJSON(interface{})
+//sets header with the key and gives it the value
+httpResponse.WriteHeader("key", "value")
 
-    //sets header with the key and gives it the value
-    httpResponse.WriteHeader("key", "value")
-
-    //writes response code to the browser
-    httpResponse.WriteStatus(code int, msg string)
-
+//writes response code to the browser
+httpResponse.WriteStatus(code int, msg string)
+```
 ## Request
+```go
+//requests data will automatically be prased
+//this is how to access
 
-    //requests data will automatically be prased
-    //this is how to access
-
-    type HttpRequest struct {
-        method      string
-        route       string
-        httpVersion string
-        body        interface{}
-        metadata    map[string]string
-        query       map[string]string
-    }
-
+type HttpRequest struct {
+    method      string
+    route       string
+    httpVersion string
+    body        interface{}
+    metadata    map[string]string
+    query       map[string]string
+}
+```
 ## Rendering html 
+```go
+Root/..
+    views/
+        css/
+            index.css
+        html/
+            index.html
+    ...
 
-    Root/..
-        views/
-            css/
-                index.css
-            html/
-                index.html
-        ...
-
-    httpResponse.SendFile("html/{filename}.html")
+ httpResponse.SendFile("html/{filename}.html")
+```

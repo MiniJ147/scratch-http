@@ -43,7 +43,8 @@ func main() {
 
 	serv.Get("/html", func(res server.HttpResponse) {
 		res.WriteStatus(200, "OK")
-		res.Send("<h1>JOHN</h1>")
+		//res.Send("<h1>JOHN</h1>")
+		res.SendFile("test.html")
 	})
 
 	serv.Listen("localhost", "3000")

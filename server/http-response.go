@@ -6,6 +6,8 @@ import (
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/minij147/scratch-http/file"
 )
 
 const HEADER_END_LINE string = "\r\n"
@@ -80,6 +82,10 @@ func (r *HttpResponse) Send(payload string) {
 
 	r.conn.Write(headerData)
 	r.conn.Write(payLoadData)
+}
+
+func (r *HttpResponse) SendFile(filename string) {
+	r.Send(file.ReadFile(filename))
 }
 
 func createHttpResponse(conn net.Conn) *HttpResponse {

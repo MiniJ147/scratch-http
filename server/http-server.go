@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -62,16 +63,20 @@ func CreateHttpServer() *HttpServer {
 		methods: make(map[string][]Route),
 	}
 
-	/*type msg struct {
-		Message string `json:"Message"`
-	}*/
-
 	//important routes that are standard
 	serv.Get("/css", func(req *HttpRequest, res HttpResponse) {
 		fmt.Println("csss: " + req.route)
-		fileName := strings.SplitAfter(req.route, "/")[2]
+		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
 		res.WriteHeader("Content-Type", "text/css")
 		res.SendFile("css/" + fileName)
+	})
+
+	serv.Get("/js", func(req *HttpRequest, res HttpResponse) {
+		fmt.Println("JS: " + req.route)
+		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
+		log.Println(fileName)
+		res.WriteHeader("Content-Type", "text/js")
+		res.SendFile("js/" + fileName)
 	})
 	return serv
 }

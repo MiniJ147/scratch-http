@@ -11,6 +11,23 @@ type Client struct {
 	httpServ *HttpServer
 }
 
+// handles intercept and returns true if intercept happend and false if not
+func (client *Client) handleIntercept(req *HttpRequest, res *HttpResponse, fileType string) bool {
+	if strings.Contains(req.route, "/"+fileType+"/") {
+		fmt.Println("need to intercept")
+		route, err := client.httpServ.Find("GET", "/"+fileType)
+		if err != nil {
+			fmt.Println(err)
+			res.SendError(500, "COULD NOT FIND FILE TYPE")
+			client.conn.Close()
+			return true
+		}
+		route.function(req, *res)
+		return true
+	}
+	return false
+}
+
 func (client *Client) handleRequest() {
 	buffer := make([]byte, 2048*4) //where request is stored
 	for {
@@ -29,24 +46,13 @@ func (client *Client) handleRequest() {
 		fmt.Println("client: ", request.route)
 		response := createHttpResponse(client.conn)
 
-		//redirects request to render css
-		if strings.Contains(request.route, "/css/") {
-			fmt.Println("need to intercept")
-			route, err := client.httpServ.Find("GET", "/css")
-			if err != nil {
-				fmt.Println(err)
-				response.WriteStatus(500, "INTERNAL SERVER BREAK")
-				response.Send("")
-				client.conn.Close()
-				return
-			}
-			route.function(request, *response)
-		} else {
+		//checks css or js request from html file
+		isIntercept := client.handleIntercept(request, response, "css") || client.handleIntercept(request, response, "js")
+		if !isIntercept {
 			route, err := client.httpServ.Find(request.method, request.route)
 			if err != nil {
 				fmt.Println(err)
-				response.WriteStatus(404, "COULD NOT FIND ROUTE")
-				response.Send("")
+				response.SendError(404, "Could not find Route")
 				client.conn.Close()
 				return
 			}

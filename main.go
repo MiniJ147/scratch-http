@@ -23,8 +23,6 @@ func main() {
 
 	serv := server.CreateHttpServer()
 	serv.Get("/", func(req *server.HttpRequest, res server.HttpResponse) {
-
-		res.WriteStatus(200, "OK")
 		res.SendJSON(msg{
 			Message: "HELLO FROM BASE ROUTE!",
 		})

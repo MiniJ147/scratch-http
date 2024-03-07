@@ -88,11 +88,16 @@ func (r *HttpResponse) Send(payload string) {
 func (r *HttpResponse) SendFile(filename string) {
 	data, err := file.ParseFile(filename)
 	if err != nil {
-		r.WriteStatus(404, "File Not Found")
-		r.Send("")
+		r.SendError(404, "File Not Found")
 		return
 	}
 	r.Send(data)
+}
+
+// useful functions
+func (r *HttpResponse) SendError(code int, msg string) {
+	r.WriteStatus(code, msg)
+	r.Send("")
 }
 
 func createHttpResponse(conn net.Conn) *HttpResponse {

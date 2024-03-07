@@ -13,12 +13,12 @@
         Full header access
         html rendering
         css rendering
+        js support
     
     The goal of this project is to be useable in an actual application. 
 
     Future Plans:
         99% success rate 
-        JS script support
         Easy json responses
         Large request acceptance 
         Support for large raw data streaming
@@ -119,6 +119,8 @@ Root/..
             index.css
         html/
             index.html
+        js/
+            index.js
     ...
 
  httpResponse.SendFile("html/{filename}.html")

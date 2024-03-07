@@ -47,7 +47,8 @@ func (client *Client) handleRequest() {
 		response := createHttpResponse(client.conn)
 
 		//checks css or js request from html file
-		isIntercept := client.handleIntercept(request, response, "css") || client.handleIntercept(request, response, "js")
+		isIntercept := client.handleIntercept(request, response, "css") || client.handleIntercept(request, response, "js") ||
+			client.handleIntercept(request, response, "assets")
 		if !isIntercept {
 			route, err := client.httpServ.Find(request.method, request.route)
 			if err != nil {

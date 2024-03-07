@@ -6,13 +6,13 @@ import (
 )
 
 // with respect from root
-func ParseFile(name string) (string, error) {
+func ParseFile(parentDir string, name string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
 
-	data, err := os.ReadFile(wd + "/views/" + name)
+	data, err := os.ReadFile(wd + "/" + parentDir + "/" + name)
 	if err != nil {
 		log.Println(err)
 		return "", err

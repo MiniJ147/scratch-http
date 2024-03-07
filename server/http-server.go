@@ -64,6 +64,8 @@ func CreateHttpServer() *HttpServer {
 	}
 
 	//important routes that are standard
+
+	//accepts all css files
 	serv.Get("/css", func(req *HttpRequest, res HttpResponse) {
 		fmt.Println("csss: " + req.route)
 		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
@@ -71,6 +73,7 @@ func CreateHttpServer() *HttpServer {
 		res.SendFile("css/" + fileName)
 	})
 
+	//accepts all js files
 	serv.Get("/js", func(req *HttpRequest, res HttpResponse) {
 		fmt.Println("JS: " + req.route)
 		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
@@ -78,5 +81,15 @@ func CreateHttpServer() *HttpServer {
 		res.WriteHeader("Content-Type", "text/js")
 		res.SendFile("js/" + fileName)
 	})
+
+	//accepts every other type of file (PNG, JPEG, SVG)
+	serv.Get("/assets", func(req *HttpRequest, res HttpResponse) {
+		fmt.Println("Image: " + req.route)
+		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
+		log.Println(fileName)
+		res.WriteHeader("Content-Type", "*/*")
+		res.SendFile("assets/" + fileName)
+	})
+
 	return serv
 }

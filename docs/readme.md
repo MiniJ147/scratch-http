@@ -14,6 +14,7 @@
         html rendering
         css rendering
         js support
+        Image support
     
     The goal of this project is to be useable in an actual application. 
 
@@ -115,6 +116,8 @@ type HttpRequest struct {
 ```go
 Root/..
     views/
+        assets/
+            .png, .svg, ...
         css/
             index.css
         html/

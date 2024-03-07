@@ -77,16 +77,12 @@ func (r *HttpResponse) Send(payload string) {
 	r.WriteHeader("Content-Length", strconv.Itoa(len(payLoadData)))
 
 	headerData := r.compileHeader()
-
-	//fmt.Println(string(headerData))
-	//fmt.Println(string(payLoadData))
-
 	r.conn.Write(headerData)
 	r.conn.Write(payLoadData)
 }
 
 func (r *HttpResponse) SendFile(filename string) {
-	data, err := file.ParseFile(filename)
+	data, err := file.ParseFile("views", filename)
 	if err != nil {
 		r.SendError(404, "File Not Found")
 		return

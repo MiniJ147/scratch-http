@@ -21,6 +21,7 @@
     Future Plans:
         99% success rate
         hot reloading 
+        unit test
         [somewhat done] Easy json responses
         Large request acceptance 
         Support for large raw data streaming
@@ -74,6 +75,12 @@ serv.Listen(host, port)
 serv.Get("route", func)
 
 serv.Post("route", func)
+
+serv.Delete("route",func)
+
+serv.Put("route",func)
+
+serv.Patch("route",func)
 ```
 
 ## Respons
@@ -93,6 +100,9 @@ httpResponse.Send(string)
 //sends json to browser
 httpResponse.SendJSON(interface{})
 
+//sends error to the browser with code and message
+httpResponse.SendError(code int, msg string)
+
 //sets header with the key and gives it the value
 httpResponse.WriteHeader("key", "value")
 
@@ -105,14 +115,32 @@ httpResponse.WriteStatus(code int, msg string)
 //this is how to access
 
 type HttpRequest struct {
-    method      string
-    route       string
-    httpVersion string
-    body        interface{}
-    metadata    map[string]string
-    query       map[string]string
+	Method      string
+	Route       string
+	HttpVersion string
+	Body        interface{}
+	Metadata    *HeaderData
+	Query       *HeaderData
 }
+
 ```
+## Accessing Query or Metadata using HeaderData
+```go
+type HeaderData struct {
+	data map[string]string
+}
+
+//value and if it passed 
+//up to user to handle bool
+//searches map for you 
+//returns "" and False if not found
+//returns value and True if found
+func Find("key") (string, bool)
+
+//inserts into map based off value to set
+func Insert("key", "value")
+```
+
 ## Rendering html 
 ```go
 Root/..

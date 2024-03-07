@@ -6,16 +6,16 @@ import (
 	"strings"
 )
 
-type Client struct {
+type client struct {
 	conn     net.Conn
 	httpServ *HttpServer
 }
 
-// handles intercept and returns true if intercept happend and false if not
-func (client *Client) handleIntercept(req *HttpRequest, res *HttpResponse, fileType string) bool {
-	if strings.Contains(req.route, "/"+fileType+"/") {
+// handles intercept and returns true if intercept happend and false if not.
+func (client *client) handleIntercept(req *HttpRequest, res *HttpResponse, fileType string) bool {
+	if strings.Contains(req.Route, "/"+fileType+"/") {
 		fmt.Println("need to intercept")
-		route, err := client.httpServ.Find("GET", "/"+fileType)
+		route, err := client.httpServ.find("GET", "/"+fileType)
 		if err != nil {
 			fmt.Println(err)
 			res.SendError(500, "COULD NOT FIND FILE TYPE")
@@ -28,7 +28,8 @@ func (client *Client) handleIntercept(req *HttpRequest, res *HttpResponse, fileT
 	return false
 }
 
-func (client *Client) handleRequest() {
+// handles an incoming request from the tcp server.
+func (client *client) handleRequest() {
 	buffer := make([]byte, 2048*4) //where request is stored
 	for {
 		data, err := client.conn.Read(buffer)
@@ -41,16 +42,17 @@ func (client *Client) handleRequest() {
 
 		//fmt.Println(requestHeaderString)
 
-		request := CreateHttpRequest(requestHeaderString)
+		request := createHttpRequest(requestHeaderString)
 
-		fmt.Println("client: ", request.route)
+		fmt.Println("client: ", request.Route)
 		response := createHttpResponse(client.conn)
 
 		//checks css or js request from html file
 		isIntercept := client.handleIntercept(request, response, "css") || client.handleIntercept(request, response, "js") ||
 			client.handleIntercept(request, response, "assets")
+
 		if !isIntercept {
-			route, err := client.httpServ.Find(request.method, request.route)
+			route, err := client.httpServ.find(request.Method, request.Route)
 			if err != nil {
 				fmt.Println(err)
 				response.SendError(404, "Could not find Route")

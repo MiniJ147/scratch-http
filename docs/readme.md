@@ -8,7 +8,7 @@
 
     Simple Http libary made in go-lang from scratch. As of 3/4/24 it supports:
         routing,
-        GET, POST
+        GET, POST, DELETE, PATCH, PUT
         JSON request
         Full header access
         html rendering
@@ -19,11 +19,12 @@
     The goal of this project is to be useable in an actual application. 
 
     Future Plans:
-        99% success rate 
-        Easy json responses
+        99% success rate
+        hot reloading 
+        [somewhat done] Easy json responses
         Large request acceptance 
         Support for large raw data streaming
-        Easy searching of request & responses
+        [somewhat done] Easy searching of request & responses
         and more... 
 
 

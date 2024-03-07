@@ -22,14 +22,15 @@ Connection: close
 */
 
 type HttpRequest struct {
-	method      string
-	route       string
-	httpVersion string
-	body        interface{}
-	metadata    map[string]string
-	query       map[string]string
+	Method      string
+	Route       string
+	HttpVersion string
+	Body        interface{}
+	Metadata    *HeaderData
+	Query       *HeaderData
 }
 
+// parses out the first line of the request.
 func parseRequestLine(req *HttpRequest, reqStr string) {
 	parsed := strings.Split(reqStr, " ")
 	//fmt.Println(parsed)
@@ -47,17 +48,18 @@ func parseRequestLine(req *HttpRequest, reqStr string) {
 			queryParse := strings.Split(q, "=")
 			name, value := queryParse[0], queryParse[1]
 
-			req.query[name] = value
+			req.Query.Insert(name, value)
 		}
 	} else {
 		route, queryLine = parsedRoute[0], ""
 	}
 
-	req.route = route
-	req.method = method
-	req.httpVersion = version
+	req.Route = route
+	req.Method = method
+	req.HttpVersion = version
 }
 
+// parses out the headers infromation and puts it into a http Request.
 func parseHeader(req *HttpRequest, reqStr string) {
 	lines := strings.Split(reqStr, HEADER_END_LINE)
 	length := len(lines)
@@ -69,7 +71,7 @@ func parseHeader(req *HttpRequest, reqStr string) {
 		c := strings.Split(lines[idx], ":")
 		if len(c) > 1 {
 			name, value := strings.ToLower(c[0]), c[1][1:]
-			req.metadata[name] = value
+			req.Metadata.Insert(name, value)
 		}
 		idx += 1
 	}
@@ -87,18 +89,18 @@ func parseHeader(req *HttpRequest, reqStr string) {
 		return
 	}
 
-	req.body = body
+	req.Body = body
 	//fmt.Println(body)
 }
 
-func CreateHttpRequest(requestString string) *HttpRequest {
-	//_, route := parseMethodAndRoute(requestString)
+// creates a http request
+func createHttpRequest(requestString string) *HttpRequest {
 	req := HttpRequest{
-		method:   "",
-		route:    "",
-		body:     nil,
-		metadata: make(map[string]string),
-		query:    make(map[string]string),
+		Method:   "",
+		Route:    "",
+		Body:     nil,
+		Metadata: createHeaderData(),
+		Query:    createHeaderData(),
 	}
 
 	parseHeader(&req, requestString)

@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -12,11 +11,12 @@ type Route struct {
 }
 
 type HttpServer struct {
-	tcpServer *Server
+	tcpServer *server
 	methods   map[string][]Route
 }
 
-func (serv *HttpServer) Find(method string, route string) (Route, error) {
+// search for a given route
+func (serv *HttpServer) find(method string, route string) (Route, error) {
 	routes := serv.methods[method]
 
 	for i := range routes {
@@ -33,6 +33,8 @@ func (serv *HttpServer) Find(method string, route string) (Route, error) {
 }
 
 // method: GET, POST, PATCH, DELETE ...
+// helper function to cut down on repeated code.
+// creates a method for us.
 func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	newRoute := Route{
 		route:    urlPath,
@@ -45,51 +47,56 @@ func helperCreateMethod(serv *HttpServer, method string, urlPath string, functio
 	serv.methods[method] = currentRoutes
 }
 
+// create a get request
 func (serv *HttpServer) Get(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	helperCreateMethod(serv, "GET", urlPath, function)
 }
 
+// create a post request
 func (serv *HttpServer) Post(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
 	helperCreateMethod(serv, "POST", urlPath, function)
 }
 
-func (serv *HttpServer) Listen(host string, port string) {
-	serv.tcpServer = CreateServer(host, port)
-	serv.tcpServer.Run(serv)
+// create a delete request
+func (serv *HttpServer) Delete(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
+	helperCreateMethod(serv, "DELETE", urlPath, function)
 }
 
+// create a PATCH request
+func (serv *HttpServer) Patch(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
+	helperCreateMethod(serv, "PATCH", urlPath, function)
+}
+
+// create a PUT request
+func (serv *HttpServer) Put(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
+	helperCreateMethod(serv, "PUT", urlPath, function)
+}
+
+// opens server on the port so it can take connections.
+func (serv *HttpServer) Listen(host string, port string) {
+	serv.tcpServer = createServer(host, port)
+	serv.tcpServer.run(serv)
+}
+
+// creates standard route and plugs in the repeated data.
+func helperCreateStandardRoute(fileType string, accepts string) func(req *HttpRequest, res HttpResponse) {
+	return func(req *HttpRequest, res HttpResponse) {
+		fileName := strings.Join(strings.SplitAfter(req.Route, "/")[2:], "")
+		res.WriteHeader("Content-Type", accepts)
+		res.SendFile(fileType + "/" + fileName)
+	}
+}
+
+// creates http server that you can use to communicate with http.
 func CreateHttpServer() *HttpServer {
 	serv := &HttpServer{
 		methods: make(map[string][]Route),
 	}
 
-	//important routes that are standard
-
-	//accepts all css files
-	serv.Get("/css", func(req *HttpRequest, res HttpResponse) {
-		fmt.Println("csss: " + req.route)
-		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
-		res.WriteHeader("Content-Type", "text/css")
-		res.SendFile("css/" + fileName)
-	})
-
-	//accepts all js files
-	serv.Get("/js", func(req *HttpRequest, res HttpResponse) {
-		fmt.Println("JS: " + req.route)
-		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
-		log.Println(fileName)
-		res.WriteHeader("Content-Type", "text/js")
-		res.SendFile("js/" + fileName)
-	})
-
-	//accepts every other type of file (PNG, JPEG, SVG)
-	serv.Get("/assets", func(req *HttpRequest, res HttpResponse) {
-		fmt.Println("Image: " + req.route)
-		fileName := strings.Join(strings.SplitAfter(req.route, "/")[2:], "")
-		log.Println(fileName)
-		res.WriteHeader("Content-Type", "*/*")
-		res.SendFile("assets/" + fileName)
-	})
+	//important routes that are standard.
+	serv.Get("/css", helperCreateStandardRoute("css", "text/css"))
+	serv.Get("/js", helperCreateStandardRoute("js", "text/js"))
+	serv.Get("/assets", helperCreateStandardRoute("assets", "*/*"))
 
 	return serv
 }

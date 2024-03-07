@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// with respect from root
+// parses out file with respect from root directory.
 func ParseFile(parentDir string, name string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {

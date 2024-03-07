@@ -10,23 +10,23 @@ import (
 	"net"
 )
 
-type Server struct {
+type server struct {
 	host string
 	port string
 }
 
-type Config struct {
+type config struct {
 	HttpVersion string
 }
 
-func CreateServer(host string, port string) *Server {
-	return &Server{
+func createServer(host string, port string) *server {
+	return &server{
 		host: host,
 		port: port,
 	}
 }
 
-func (serv *Server) Run(httpServ *HttpServer) {
+func (serv *server) run(httpServ *HttpServer) {
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", serv.host, serv.port))
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +40,7 @@ func (serv *Server) Run(httpServ *HttpServer) {
 			log.Fatal(err)
 		}
 
-		client := &Client{
+		client := &client{
 			conn:     conn,
 			httpServ: httpServ,
 		}

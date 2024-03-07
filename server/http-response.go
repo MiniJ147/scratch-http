@@ -18,16 +18,17 @@ type HttpResponse struct {
 	conn       net.Conn
 }
 
-// write things to header
+// write things to header.
 func (r *HttpResponse) WriteHeader(key string, value string) {
 	r.header[key] = value
 }
 
-// write status to response
+// write status to response.
 func (r *HttpResponse) WriteStatus(code int, msg string) {
 	r.statusLine = "HTTP/1.1 " + strconv.Itoa(code) + " " + msg + HEADER_END_LINE
 }
 
+// turns header from map to one string line for the browser to read.
 func (r *HttpResponse) compileHeader() []byte {
 	headerString := ""
 	headerString += r.statusLine
@@ -41,10 +42,12 @@ func (r *HttpResponse) compileHeader() []byte {
 	return []byte(headerString)
 }
 
+// helper to turn our string to bytes.
 func (r *HttpResponse) compilePayload(data string) []byte {
 	return []byte(data)
 }
 
+// inits the header with data we need at the start.
 func (r *HttpResponse) initHeader() {
 	r.WriteHeader("Content-Type", "text/html")
 	r.WriteHeader("Date", time.Now().Format("01-02-2006 15:04:05"))
@@ -53,6 +56,7 @@ func (r *HttpResponse) initHeader() {
 	r.WriteStatus(200, "OK")
 }
 
+// sends JSON to the browser.
 func (r *HttpResponse) SendJSON(payload interface{}) {
 	payLoadData, err := json.Marshal(payload)
 	if err != nil {
@@ -71,6 +75,7 @@ func (r *HttpResponse) SendJSON(payload interface{}) {
 	r.conn.Write(payLoadData)
 }
 
+// Sends raw string to the browser.
 func (r *HttpResponse) Send(payload string) {
 	payLoadData := r.compilePayload(payload)
 
@@ -81,6 +86,8 @@ func (r *HttpResponse) Send(payload string) {
 	r.conn.Write(payLoadData)
 }
 
+// Send File to the browser from the views folder.
+// starts from the views directory.
 func (r *HttpResponse) SendFile(filename string) {
 	data, err := file.ParseFile("views", filename)
 	if err != nil {
@@ -91,6 +98,8 @@ func (r *HttpResponse) SendFile(filename string) {
 }
 
 // useful functions
+
+// sends error to browser
 func (r *HttpResponse) SendError(code int, msg string) {
 	r.WriteStatus(code, msg)
 	r.Send("")

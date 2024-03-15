@@ -32,7 +32,7 @@ type HttpRequest struct {
 
 // parses out the first line of the request.
 func parseRequestLine(req *HttpRequest, reqStr string) {
-	parsed := strings.Split(reqStr, " ")
+	parsed := strings.Split(reqStr, " ") //
 	//fmt.Println(parsed)
 	method, routeStr, version := parsed[0], parsed[1], parsed[2]
 
@@ -91,6 +91,23 @@ func parseHeader(req *HttpRequest, reqStr string) {
 
 	req.Body = body
 	//fmt.Println(body)
+}
+
+// pass in the ptr to the struct you wish the data to enter.
+// attempts to format request body based of template passed in.
+// will return err if not successful.
+func (req *HttpRequest) FormatBodyToStruct(template any) error {
+	dbByte, err := json.Marshal(req.Body)
+	if err != nil {
+		log.Fatalf("Failed to marshal request body: %v\n", err)
+		return err
+	}
+	err = json.Unmarshal(dbByte, &template)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal json body: %v\n", err)
+		return err
+	}
+	return nil
 }
 
 // creates a http request

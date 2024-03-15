@@ -5,7 +5,7 @@ import (
 )
 
 func TestStatusLine(t *testing.T) {
-	const testData1 = "GET /?meep=asdfsad HTTP/1.1 \r\n"
+	const testData = "GET / HTTP/1.1\r\n"
 
 	master := HttpRequest{
 		Method:      "GET",
@@ -13,7 +13,7 @@ func TestStatusLine(t *testing.T) {
 		HttpVersion: "HTTP/1.1",
 	}
 
-	tester := createHttpRequest(testData1)
+	tester := createHttpRequest(testData)
 
 	if master.Method != tester.Method {
 		t.Fatalf("TEST 1: FAILED | Method: %v != %v", master.Method, tester.Method)

@@ -3,7 +3,10 @@ package main
 /*
 TODO:
  - add support for super long request (split tcp reading)
- - add post and delete
+ - make sure all types of bodys are accepted
+ - simplfy json parsing
+ - Redirect
+ - middleware support
 */
 
 import (
@@ -16,6 +19,22 @@ func main() {
 	fmt.Println("Hello From Server")
 
 	serv := server.CreateHttpServer()
+	serv.Get("/", func(req *server.HttpRequest, res server.HttpResponse) {
+		res.SendFile("html/test.html")
+	})
+
+	serv.Post("/submit", func(req *server.HttpRequest, res server.HttpResponse) {
+		type example struct {
+			Price string `json:"price"`
+			Name  string `json:"name"`
+		}
+
+		e := example{}
+		req.FormatBodyToStruct(&e)
+		fmt.Printf("Name: %v | Price: %v \n", e.Name, e.Price)
+		res.Send("Hey")
+	})
+
 	serv.Get("/json", func(req *server.HttpRequest, res server.HttpResponse) {
 		type Person struct {
 			Name    string   `json:"name"`

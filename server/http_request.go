@@ -25,7 +25,7 @@ type HttpRequest struct {
 	Method      string
 	Route       string
 	HttpVersion string
-	Body        interface{}
+	Body        map[string]any
 	Metadata    *HeaderData
 	Query       *HeaderData
 }
@@ -81,16 +81,34 @@ func parseHeader(req *HttpRequest, reqStr string) {
 		return
 	}
 
-	//parse body if there is one
-	var body interface{}
-	err := json.Unmarshal([]byte(lines[idx]), &body)
-	if err != nil {
-		log.Println(err)
+	log.Println(lines[idx:])
+	parseBody(req, lines[idx])
+
+	fmt.Println(req.Body)
+}
+
+func parseBody(req *HttpRequest, bodyString string) {
+	//parse body if there is one [assuming json]
+	if bodyString == "" {
+		log.Println("No Body")
 		return
 	}
 
-	req.Body = body
-	//fmt.Println(body)
+	//the curly brace detects if it is a json or not
+	if bodyString[0] == '{' {
+		err := json.Unmarshal([]byte(bodyString), &req.Body)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	} else {
+		fmt.Println("not vaild json time to parse normally")
+		inputs := strings.Split(bodyString, "&")
+		for _, input := range inputs {
+			vals := strings.Split(input, "=")
+			req.Body[vals[0]] = vals[1]
+		}
+	}
 }
 
 // pass in the ptr to the struct you wish the data to enter.
@@ -115,7 +133,7 @@ func createHttpRequest(requestString string) *HttpRequest {
 	req := HttpRequest{
 		Method:   "",
 		Route:    "",
-		Body:     nil,
+		Body:     make(map[string]any),
 		Metadata: createHeaderData(),
 		Query:    createHeaderData(),
 	}

@@ -40,7 +40,7 @@ func (client *client) handleRequest() {
 
 		requestHeaderString := string(buffer[:data])
 
-		//fmt.Println(requestHeaderString)
+		fmt.Println(requestHeaderString)
 
 		request := createHttpRequest(requestHeaderString)
 

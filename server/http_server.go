@@ -6,8 +6,9 @@ import (
 )
 
 type Route struct {
-	route    string
-	function func(req *HttpRequest, res HttpResponse)
+	route       string
+	middlewares []func(req *HttpRequest, res HttpResponse) bool
+	function    func(req *HttpRequest, res HttpResponse)
 }
 
 type HttpServer struct {
@@ -35,11 +36,15 @@ func (serv *HttpServer) find(method string, route string) (Route, error) {
 // method: GET, POST, PATCH, DELETE ...
 // helper function to cut down on repeated code.
 // creates a method for us.
-func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(req *HttpRequest, res HttpResponse)) {
+func helperCreateMethod(serv *HttpServer, method string, urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares []func(req *HttpRequest, res HttpResponse) bool) {
 	newRoute := Route{
-		route:    urlPath,
-		function: function,
+		route:       urlPath,
+		middlewares: middlewares,
+		function:    function,
 	}
+
+	fmt.Println(middlewares)
 
 	currentRoutes := serv.methods[method]
 	currentRoutes = append(currentRoutes, newRoute)
@@ -48,28 +53,33 @@ func helperCreateMethod(serv *HttpServer, method string, urlPath string, functio
 }
 
 // create a get request
-func (serv *HttpServer) Get(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
-	helperCreateMethod(serv, "GET", urlPath, function)
+func (serv *HttpServer) Get(urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares ...func(req *HttpRequest, res HttpResponse) bool) {
+	helperCreateMethod(serv, "GET", urlPath, function, middlewares)
 }
 
 // create a post request
-func (serv *HttpServer) Post(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
-	helperCreateMethod(serv, "POST", urlPath, function)
+func (serv *HttpServer) Post(urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares ...func(req *HttpRequest, res HttpResponse) bool) {
+	helperCreateMethod(serv, "POST", urlPath, function, middlewares)
 }
 
 // create a delete request
-func (serv *HttpServer) Delete(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
-	helperCreateMethod(serv, "DELETE", urlPath, function)
+func (serv *HttpServer) Delete(urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares ...func(req *HttpRequest, res HttpResponse) bool) {
+	helperCreateMethod(serv, "DELETE", urlPath, function, middlewares)
 }
 
 // create a PATCH request
-func (serv *HttpServer) Patch(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
-	helperCreateMethod(serv, "PATCH", urlPath, function)
+func (serv *HttpServer) Patch(urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares ...func(req *HttpRequest, res HttpResponse) bool) {
+	helperCreateMethod(serv, "PATCH", urlPath, function, middlewares)
 }
 
 // create a PUT request
-func (serv *HttpServer) Put(urlPath string, function func(req *HttpRequest, res HttpResponse)) {
-	helperCreateMethod(serv, "PUT", urlPath, function)
+func (serv *HttpServer) Put(urlPath string, function func(req *HttpRequest, res HttpResponse),
+	middlewares ...func(req *HttpRequest, res HttpResponse) bool) {
+	helperCreateMethod(serv, "PUT", urlPath, function, middlewares)
 }
 
 // opens server on the port so it can take connections.

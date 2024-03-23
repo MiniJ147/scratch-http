@@ -28,6 +28,19 @@ func (client *client) handleIntercept(req *HttpRequest, res *HttpResponse, fileT
 	return false
 }
 
+func (client *client) handleCalls(route Route, req *HttpRequest, res HttpResponse) {
+	fmt.Println("handling calls")
+	fmt.Println(route)
+	for _, middleware := range route.middlewares {
+		returnFlag := middleware(req, res) //runs the middleware then checks if we need to return out
+		if returnFlag {
+			return
+		}
+	}
+
+	route.function(req, res)
+}
+
 // handles an incoming request from the tcp server.
 func (client *client) handleRequest() {
 	buffer := make([]byte, 2048*4) //where request is stored
@@ -40,7 +53,7 @@ func (client *client) handleRequest() {
 
 		requestHeaderString := string(buffer[:data])
 
-		fmt.Println(requestHeaderString)
+		//fmt.Println(requestHeaderString)
 
 		request := createHttpRequest(requestHeaderString)
 
@@ -59,7 +72,8 @@ func (client *client) handleRequest() {
 				client.conn.Close()
 				return
 			}
-			route.function(request, *response)
+			client.handleCalls(route, request, *response)
+			//route.function(request, *response)
 		}
 
 		client.conn.Close()

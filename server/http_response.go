@@ -77,13 +77,17 @@ func (r *HttpResponse) SendJSON(payload interface{}) {
 
 // Sends raw string to the browser.
 func (r *HttpResponse) Send(payload string) {
-	payLoadData := r.compilePayload(payload)
-
-	r.WriteHeader("Content-Length", strconv.Itoa(len(payLoadData)))
-
+	//TODO make it so we don't write data all the time and we can send the header simply
+	var payLoadData []byte
+	if payload != "" {
+		payLoadData = r.compilePayload(payload)
+		r.WriteHeader("Content-Length", strconv.Itoa(len(payLoadData)))
+	}
 	headerData := r.compileHeader()
 	r.conn.Write(headerData)
-	r.conn.Write(payLoadData)
+	if payload != "" {
+		r.conn.Write(payLoadData)
+	}
 }
 
 // Send File to the browser from the views folder.
@@ -95,6 +99,12 @@ func (r *HttpResponse) SendFile(filename string) {
 		return
 	}
 	r.Send(data)
+}
+
+func (r *HttpResponse) Redirect(location string) {
+	r.WriteStatus(301, "Moved Permanently")
+	r.WriteHeader("Location", location)
+	r.Send("")
 }
 
 // useful functions

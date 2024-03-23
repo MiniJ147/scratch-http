@@ -72,18 +72,18 @@ serv.Listen(host, port)
 //this is how to create routes assigned to specfic methods. 
 //Func will be called when route is called.
     
-serv.Get("route", func)
+serv.Get("route", func, middleware ...func)
 
-serv.Post("route", func)
+serv.Post("route", func, middleware ...func)
 
-serv.Delete("route",func)
+serv.Delete("route",func, middleware ...func)
 
-serv.Put("route",func)
+serv.Put("route",func, middleware ...func)
 
-serv.Patch("route",func)
+serv.Patch("route",func, middleware ...func)
 ```
 
-## Respons
+## Response
 ```go
 type HttpResponse struct {
     statusLine string  
@@ -108,6 +108,9 @@ httpResponse.WriteHeader("key", "value")
 
 //writes response code to the browser
 httpResponse.WriteStatus(code int, msg string)
+
+//will redirect to a new route after function calling
+httpResponse.Redirect("route")
 ```
 ## Request
 ```go
@@ -139,6 +142,32 @@ func Find("key") (string, bool)
 
 //inserts into map based off value to set
 func Insert("key", "value")
+```
+
+## Middleware
+```go
+/*
+Important note
+middleware will return a bool this is the status of the function call.
+False -> means no redirect we can continue to next middleware
+True -> means redirect and we must stop the middleware and all future calls
+
+Middleware gets executed in order 0 --> n
+*/
+
+//To declare
+func exampleMiddleware(req *server.HttpRequest, res server.HttpResponse) bool {
+	fmt.Println("From Middleware")
+	return false
+}
+
+//passing it in
+serv.Get("/",func, exampleMiddleware)
+
+//example flow of middleware
+//the flow would look like
+//mid1 -> mid2 -> mid3 -> logic
+serv.Get("/",logic func, mid1 func, mid2, func, mid3 func)
 ```
 
 ## Rendering html 
